@@ -4,3 +4,220 @@ block content
   h1= title
   p Welcome to #{title}
   p 支援距離感測 #{proximity}
+
+  
+<html>
+<head>
+<title>Blinky POV and Blinky GRID Programming</title>
+<link rel="stylesheet" type="text/css" href="drag.css" />
+<script type="text/javascript" src="SOTC-DnDLists.js"></script>
+
+<script type="text/javascript">
+
+        var _gaq = _gaq || [];
+        _gaq.push(['_setAccount', 'UA-1965415-2']);
+        _gaq.push(['_setDomainName', '.wayneandlayne.com']);
+        _gaq.push(['_trackPageview']);
+
+        (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+        })();
+
+</script>
+
+
+<script type="text/javascript">
+var changeclolor=true;
+        function handle_message_pixel(which)
+        {
+        message_data.push(make_config_byte(which, 0x80)); // pixel message has bit 7 = 1
+
+        var columns = document.getElementById("msg_" + which + "_pixel_leds").getElementsByTagName("div");
+        if (document.getElementById("msg_" + which + "_anim_anim").checked)
+        num_data_bytes = 7 * Math.ceil(columns.length / 7);
+        else
+        num_data_bytes = columns.length;
+        message_data.push(num_data_bytes);
+        for (var c = 0; c < columns.length; c++)
+        {
+        var leds = columns[c].getElementsByTagName("img");
+        var data = 0;
+        for (var l = 0; l < leds.length; l++)
+        {
+        if (leds[l].src.indexOf("lit") != -1)
+        {
+        data |= (1 << (7-l)); // TODO here is where we figure out the endianness stuff, so check here if things are upside down or whatever
+        }
+        }
+        message_data.push(data);
+        }
+
+        if (document.getElementById("msg_" + which + "_anim_anim").checked)
+        { // for flashy mode, we have to pad out to even blocks of seven
+        for (var i = 0; i < (7 - (columns.length % 7)) % 7; i++)
+        message_data.push(0x00);
+        }
+        }
+
+        // these two functions add byte values into the message_data
+// message config byte (byte 0 of each message):
+//  7       pixel=1, text=0
+//  6       flashy=1, marquee=0 (grid only)
+//  5-2     delay, low is fast, high is slow
+//  1-0     end type,
+// TODO are the foo=1, bar=0 items above accurate?
+// byte 1 is the number of data bytes
+        function handle_message_text(which)
+        {
+        message_data.push(make_config_byte(which, 0x00)); // text message has bit 7 = 0
+        font_table = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ.!&?, ";
+        var text = document.getElementById("msg_" + which + "_text_message").value.toUpperCase();
+        var num_chars = 0;
+        var this_data = Array();
+        for (var i = 0; i < text.length; i++)
+        {
+        var c = font_table.indexOf(text[i]);
+        if (c == -1)
+        {
+        alert("Invalid character detected in font message '" + which + "': '" + text[i] + "'. It will be ignored.");
+        }
+        else
+        {
+        this_data.push(c);
+        num_chars++;
+        }
+        }
+        message_data.push(num_chars);
+        for (var i = 0; i < num_chars; i++)
+        message_data.push(this_data[i]);
+        }
+
+function start_blink()
+        {
+            //color = prompt("Enter the color you want on the Background???");
+    //document.body.style.backgroundColor = color;
+            //alert("eeeee");
+            if (changeclolor){
+             	e = document.getElementById("divdata");
+        			e.style.backgroundColor = "white";
+            }else{
+            	e = document.getElementById("divdata");
+        			e.style.backgroundColor = "black";
+            }
+            changeclolor=!changeclolor;
+        }
+
+
+// this function is called by the "stop" button
+    function stop_dump()
+        {
+            transmitting = 0;
+            document.getElementById("progressImg").width = 0;
+            document.getElementById("progressSpan").innerHTML = "Canceled";
+        }
+        // this function is called by the "go" button, and starts everything off
+        function start_dump()
+        {
+        if (transmitting == 0) // not currently transmitting
+        {
+        current_clock = 0;
+        message_data = Array();
+        var num_messages = 0;
+        var items = List.getElementsByTagName("div");
+        for (var i = 0, n = items.length; i < n; i++)
+        {
+        var item = items[i];
+        if (item.getAttribute("class") == "list")
+        {
+        var id = item.id.split("_")[1];
+        if (document.getElementById("msg_" + id + "_type_text").checked)
+        {
+        // this is a text message - put bytes into message_data
+        handle_message_text(id);
+        }
+        else
+        {
+        // this is a pixel message - put bytes into message_data
+        handle_message_pixel(id);
+        }
+        document.getElementById("message_data").value = message_data;
+        num_messages++;
+        }
+        }
+        if (num_messages > 0)
+        {
+        // we found at least one message to transmit
+        message_data.unshift(num_messages);
+        document.getElementById("message_data").value = message_data;
+        var hex = Array();
+        for (var i = 0; i < message_data.length; i++)
+        hex.push(dec2hex(message_data[i]));
+        document.getElementById("message_data_hex").value = hex;
+
+        wrap_messages(); // converts data from message_data to xmit_data
+        document.getElementById("xmit_data").value = xmit_data;
+        hex = Array();
+        for (var i = 0; i < xmit_data.length; i++)
+        hex.push(dec2hex(xmit_data[i]));
+        document.getElementById("xmit_data_hex").value = hex;
+
+        encode_xmit_data(); // converts data from xmit_data to 0/1 stored in xmit_raw
+        document.getElementById("xmit_raw").value = xmit_raw;
+
+        // do the actual blinking transmission
+        index = 0;
+        transmitting = 1;
+        delay = document.getElementById("delay").value;
+        setTimeout('set_data()', delay);
+        }
+
+        } // else we are currently transmitting, ignore the button press
+        }
+
+
+</script>
+
+</head>
+
+
+
+
+<body>
+
+
+<div id="ie_message" style="display: none;">
+<strong>Internet Explorer users:</strong> The blinky programming website doesn't work with IE, so you need to use another browser. We've had great luck with Firefox and Chrome, along with the Android and iOS browsers. Sorry for the inconvenience!<br /><a href="http://www.mozilla.org/en-US/firefox/fx/"><img src="get_firefox.png" width="175" height="68" border="0" /></a>&nbsp;&nbsp;&nbsp;<a href="https://www.google.com/chrome"><img src="get_chrome.png" width="175" height="68" border="0" /></a>
+</div>
+
+
+<input type="button" onclick="javascript: add_new_message();" value="Add New Message" />
+<!-- TODO add some buttons like "Add @" and "Add heart" eventually. -->
+<script type="text/javascript">
+        load();
+        add_new_message(); // start out with one message
+        if (getInternetExplorerVersion() != -1)
+        {
+        document.getElementById("ie_message").style.display = "block";
+        }
+</script>
+
+
+<div style="width: 620px;">
+<div style="float: right; width: 301px; padding-left: 10px;">
+<br /><div style="width: 301px; height: 30px; border: 2px solid white; position: relative;">
+<img src="progress_bar_30px_tall.png" height="30" width="1" id="progressImg" style="position: absolute; top: 0; left: 0; z-index: -1;" />
+<div style="padding: 5px;">Progress: <span id="progressSpan"></span></div>
+</div>
+<br />
+<table border="0" cellspacing="2" cellpadding="2">
+<tr><td><input type="button" onClick="javascript:setInterval(start_blink, 300);" style="height: 50px; width: 60px; font-size: 100%; font-weight: bold;" value="Go" /></td><td>
+<input type="button" onClick="javascript:stop_dump();" style="height: 50px; width: 60px; font-size: 100%; font-weight: bold;" value="Stop" /></td>
+<td>Delay (ms):<br /><input type="text" size="4" id="delay" value="40" /></td></tr></table>
+</div>
+<div style="width: 301px; background-color: white; border: 2px solid white;">
+<div id="divdata" style="width: 150px; height: 150px; background-color: black; float: right;">Data</div>
+<div id="divclock" style="width: 150px; height: 150px; background-color: black;">Clock</div>
+</div>
+</div>
