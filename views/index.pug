@@ -148,47 +148,7 @@ block content
       } // else we are currently transmitting, ignore the button press
       }
   body
-    h1 Blinky POV and Blinky GRID Programming
-    p
-      | This webpage will let you design and upload new messages to your 
-      a(href='http://www.wayneandlayne.com/projects/blinky/') Blinky POV
-      |  or 
-      a(href='http://www.wayneandlayne.com/projects/blinky/') Blinky GRID
-      |  kit. First, you should create one or more messages in the first section below. Once your messages are prepared, section 2 below will let you transmit the new message(s) to your Blinky kit.
-    #ie_message(style='display: none;')
-      strong Internet Explorer users:
-      |  The blinky programming website doesn't work with IE, so you need to use another browser. We've had great luck with Firefox and Chrome, along with the Android and iOS browsers. Sorry for the inconvenience!
-      br
-      a(href='http://www.mozilla.org/en-US/firefox/fx/')
-        img(src='get_firefox.png', width='175', height='68', border='0')
-      a(href='https://www.google.com/chrome')
-        img(src='get_chrome.png', width='175', height='68', border='0')
-    h2 1. Create Messages
-    p
-      | You can store multiple messages on your Blinky kit. Messages can be either text-based or pixel-based. Font-based messages take up much less memory than pixel-based messages. Marquee/Animation only matters on Blinky GRID. For delay, 0 is the fastest value and 15 is the slowest value. Drag the arrow icons to reorder your messages. Use the garbage can to remove a message.
-    #list(style='position: relative; border: 1px solid white; width: 575px;')
-    input(type='button', onclick='javascript: add_new_message();', value='Add New Message')
-    // TODO add some buttons like "Add @" and "Add heart" eventually.
-    script(type='text/javascript').
-      load();
-      add_new_message(); // start out with one message
-      if (getInternetExplorerVersion() != -1)
-      {
-      document.getElementById("ie_message").style.display = "block";
-      }
-    h2 2. Programming
-    p
-      | Enter programming mode: Hold down the button while turning on the power switch. Release the button. Hold the Blinky up to the screen. Be sure to align the sensors correctly: The sensor labeled C points to clock, and D points to data. Press and release the button when you're ready to begin transmission. Press the Go button to start.
-    p
-      a(href='/files/blinky/images/programming_animated_gif/blinky_programming.gif')
-        img(src='/files/blinky/images/programming_animated_gif/blinky_programming_crop.png', width='375px', height='194px', border='0')
-        br
-        strong Check out this awesome animated guide to programming!
-    p
-      strong Please note!
-      |  On 2011/09/10 we switched the locations of the clock and data squares below to make it easier to hold the Blinky device while programming, based on customer feed back we have received over the past few months. This requires no change in the Blinky firmware, only a change in how you align the sensors on the screen. Please 
-      a(href='/contact/') let us know
-      |  if this change is a dealbreaker.
+    
     div(style='width: 620px;')
       div(style='float: right; width: 301px; padding-left: 10px;')
         br
@@ -211,40 +171,5 @@ block content
       div(style='width: 301px; background-color: white; border: 2px solid white;')
         #divdata(style='width: 150px; height: 150px; background-color: black; float: right;') Data
         #divclock(style='width: 150px; height: 150px; background-color: black;') Clock
-    h2 3. Troubleshooting
-    p
-      | For the delay value, smaller values equal quicker data transmissions, but too small/fast might cause errors! The smallest reliable value depends on your monitor, browser, and computer graphics hardware. Start with a value of 40, and make sure it can reliably transfer your messages. You can then gradually reduce the delay time until you start having invalid transmissions, indicated by alternating flashing of the third and fourth LEDs on your Blinky board. We've have good luck with values of 25-40 on various systems we've tested.
-    p
-      | During normal transmission, the second LED will flash once for each byte of data received. When the transmission is finished, the blinky should immediately start displaying your messages. The blinky data is transmitted as a series of one or more 
-      em records
-      | . After each record is transmitted, the blinky will double-check the data to make sure it was properly transmitted (using something called a 
-      a(href='http://en.wikipedia.org/wiki/Checksum') checksum
-      | ). If the checksum is invalid, meaning that there was a data transmission problem, the third and fourth LEDs on the blinky will flash rapidly in an alternating pattern. If this happens, press the Stop button, reset your blinky into the programming (bootloader) mode, and try again. If you continue to experience trouble, try increasing the value in the delay box and set your monitor's brightness to 100%. If nothing works, try the 
-      a(href='/forum/') forums
-      | .
-    div(style='display: none;')
-      hr
-      strong Debug information:
-      br
-      | message_data:
-      br
-      textarea#message_data(cols='60', rows='5')
-      br
-      | message_data hex:
-      br
-      textarea#message_data_hex(cols='60', rows='5')
-      br
-      br
-      | xmit_data:
-      br
-      textarea#xmit_data(cols='60', rows='5')
-      br
-      | xmit_data hex:
-      br
-      textarea#xmit_data_hex(cols='60', rows='5')
-      br
-      br
-      br
-      | xmit_raw:
-      br
-      textarea#xmit_raw(cols='60', rows='5')
+    
+    
